@@ -20,60 +20,21 @@
       font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
     }
 
-    /* 手機直向提示遮罩 */
-    #orient-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #0f172a;
-      z-index: 99999;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      text-align: center;
-      padding: 24px;
-    }
-    .rotate-phone-icon {
-      font-size: 64px;
-      animation: rotateAnim 2s infinite ease-in-out;
-      margin-bottom: 20px;
-    }
-    @keyframes rotateAnim {
-      0%, 10% { transform: rotate(0deg); }
-      50%, 60% { transform: rotate(-90deg); }
-      90%, 100% { transform: rotate(0deg); }
-    }
-    #orient-overlay h2 {
-      font-size: 26px;
-      margin-bottom: 12px;
-      color: #f59e0b;
-    }
-    #orient-overlay p {
-      font-size: 18px;
-      color: #94a3b8;
-      line-height: 1.6;
-    }
-
-    /* 遊戲主容器：滿版橫向自動適應 */
     #game-container {
       position: relative;
       width: 100vw;
       height: 100vh;
-      overflow: hidden;
-      background: #87ceeb;
       display: flex;
       flex-direction: column;
+      background: #87ceeb;
+      overflow: hidden;
     }
 
-    /* 頂部引導列 */
+    /* 頂部操作與提示列 */
     #header-bar {
-      height: 15%;
-      min-height: 48px;
-      background: rgba(255, 255, 255, 0.98);
+      height: 60px;
+      min-height: 60px;
+      background: #ffffff;
       border-bottom: 3px solid #f59e0b;
       display: flex;
       align-items: center;
@@ -82,7 +43,7 @@
       z-index: 100;
     }
     .level-badge {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 900;
       color: #7c2d12;
       background: #fed7aa;
@@ -92,7 +53,7 @@
       white-space: nowrap;
     }
     .instruction-text {
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 900;
       color: #b91c1c;
       text-align: center;
@@ -105,7 +66,7 @@
     .btn-replay-sound {
       background: #10b981;
       color: #ffffff;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: bold;
       border: 2px solid #047857;
       border-radius: 30px;
@@ -119,12 +80,13 @@
       box-shadow: none;
     }
 
-    /* 舞台街道區塊 */
+    /* 上半部：精緻街道與阿公 */
     #stage-area {
-      flex: 1;
+      height: 48%;
       position: relative;
       overflow: hidden;
       background: linear-gradient(to bottom, #60a5fa 0%, #93c5fd 40%, #dbeafe 55%);
+      border-bottom: 4px solid #1e293b;
     }
 
     .iso-street-bg {
@@ -137,13 +99,12 @@
       z-index: 1;
     }
 
-    /* 阿公角色 */
     #grandpa-box {
       position: absolute;
       bottom: 8%;
-      left: 2%;
-      width: 90px;
-      height: 150px;
+      left: 6%;
+      width: 80px;
+      height: 135px;
       z-index: 20;
       display: flex;
       flex-direction: column;
@@ -154,8 +115,8 @@
     .grandpa-shadow {
       position: absolute;
       bottom: -4px;
-      width: 65px;
-      height: 16px;
+      width: 60px;
+      height: 14px;
       background: rgba(0, 0, 0, 0.4);
       border-radius: 50%;
       filter: blur(3px);
@@ -170,11 +131,10 @@
       z-index: 30;
     }
     .listen-ear {
-      font-size: 32px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+      font-size: 28px;
     }
     .listen-q {
-      font-size: 34px;
+      font-size: 30px;
       font-weight: 900;
       color: #ef4444;
       animation: bounce 0.8s infinite alternate;
@@ -185,31 +145,36 @@
     }
     @keyframes bounce {
       0% { transform: translateY(0); }
-      100% { transform: translateY(-6px); }
+      100% { transform: translateY(-5px); }
     }
     .grandpa-svg {
       width: 100%;
       height: 90%;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
 
-    /* 車輛選項容器：橫向避開阿公、水平平均分布 */
-    #vehicles-container {
-      position: absolute;
-      bottom: 6%;
-      left: 17%;
-      right: 3%;
-      height: 48%;
+    /* 下半部：大按鈕操作區 */
+    #bottom-controls {
+      height: 52%;
+      background: #0f172a;
       display: flex;
       align-items: center;
-      justify-content: space-evenly;
-      gap: 12px;
-      z-index: 25;
+      justify-content: center;
+      padding: 14px;
+      position: relative;
     }
+
+    #vehicles-container {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+      gap: 12px;
+      align-items: center;
+    }
+
     .vehicle-item {
-      flex: 1;
-      max-width: 170px;
-      height: 88%;
+      height: 90%;
       cursor: pointer;
       display: flex;
       flex-direction: column;
@@ -217,25 +182,24 @@
       justify-content: center;
       border-radius: 18px;
       background: linear-gradient(145deg, #ffffff, #f1f5f9);
-      border: 3px solid #ffffff;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.35), 0 4px 0 #94a3b8;
+      border: 3px solid #38bdf8;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3), 0 4px 0 #0284c7;
       transition: all 0.2s ease;
       touch-action: manipulation;
+      padding: 8px;
     }
     .vehicle-emoji {
-      font-size: clamp(38px, 9vw, 56px);
+      font-size: clamp(40px, 11vw, 56px);
       line-height: 1.1;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
     }
     .vehicle-name-tag {
       background: #0f172a;
       color: #fff;
-      font-size: clamp(15px, 3.2vw, 20px);
+      font-size: clamp(16px, 4.2vw, 22px);
       font-weight: 900;
-      padding: 3px 12px;
+      padding: 4px 14px;
       border-radius: 10px;
-      margin-top: 4px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      margin-top: 6px;
       white-space: nowrap;
     }
 
@@ -249,17 +213,16 @@
       transform: translateY(3px) scale(0.96);
     }
 
-    /* 第二關選項面板 */
+    /* 第二關選項 */
     #guess-panel {
       position: absolute;
-      bottom: 6%;
-      left: 17%;
-      right: 3%;
-      height: 60%;
+      top: 14px;
+      bottom: 14px;
+      left: 14px;
+      right: 14px;
       background: rgba(255, 255, 255, 0.98);
       border-radius: 20px;
       border: 4px solid #0284c7;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
       display: none;
       align-items: center;
       justify-content: space-around;
@@ -269,28 +232,27 @@
     .guess-btn {
       flex: 1;
       height: 90%;
-      margin: 0 8px;
+      margin: 0 6px;
       background: #f0fdf4;
       border: 3px solid #22c55e;
-      border-radius: 18px;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 6px 0 #15803d, 0 8px 16px rgba(0,0,0,0.2);
-      transition: all 0.2s ease;
+      box-shadow: 0 5px 0 #15803d;
       touch-action: manipulation;
     }
     .guess-btn:not(.locked-controls):active {
-      transform: translateY(4px);
+      transform: translateY(3px);
       box-shadow: 0 2px 0 #15803d;
     }
     .guess-btn .vehicle-emoji {
-      font-size: clamp(38px, 9vw, 56px);
+      font-size: clamp(40px, 10vw, 56px);
     }
     .guess-btn span {
-      font-size: clamp(16px, 3.4vw, 22px);
+      font-size: clamp(16px, 4vw, 22px);
       font-weight: 900;
       color: #14532d;
       margin-top: 6px;
@@ -304,13 +266,13 @@
     }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      75% { transform: translateX(10px); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
     }
     .correct-glow {
-      box-shadow: 0 0 35px #10b981 !important;
+      box-shadow: 0 0 30px #10b981 !important;
       border-color: #10b981 !important;
-      transform: scale(1.08) !important;
+      transform: scale(1.05) !important;
     }
 
     /* 開始遮罩 */
@@ -326,21 +288,21 @@
       align-items: center;
       justify-content: center;
       z-index: 999;
+      padding: 20px;
     }
     .btn-start-game {
       background: #f59e0b;
       color: #7c2d12;
-      font-size: clamp(26px, 6vw, 36px);
+      font-size: 32px;
       font-weight: 900;
       border: 4px solid #fff;
       border-radius: 40px;
-      padding: 14px 40px;
+      padding: 16px 40px;
       cursor: pointer;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       touch-action: manipulation;
     }
 
-    /* 結算頁面 */
     #result-modal {
       position: absolute;
       top: 0;
@@ -359,12 +321,13 @@
     .result-card {
       background: #fff;
       color: #1e293b;
-      padding: 20px 32px;
+      padding: 24px 28px;
       border-radius: 22px;
       text-align: center;
       box-shadow: 0 16px 36px rgba(0,0,0,0.6);
       border: 5px solid #fbbf24;
-      max-width: 90%;
+      width: 90%;
+      max-width: 360px;
     }
     .result-card h2 {
       font-size: 26px;
@@ -372,18 +335,17 @@
       margin-bottom: 12px;
     }
     .stat-row {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: bold;
       margin: 8px 0;
       display: flex;
       justify-content: space-between;
-      gap: 20px;
     }
     .stat-val {
       color: #0369a1;
     }
     .btn-restart {
-      margin-top: 14px;
+      margin-top: 16px;
       background: #e11d48;
       color: #fff;
       font-size: 20px;
@@ -396,13 +358,6 @@
   </style>
 </head>
 <body>
-
-<!-- 手機直向旋轉提醒 -->
-<div id="orient-overlay">
-  <div class="rotate-phone-icon">📱</div>
-  <h2>請將手機轉為橫向</h2>
-  <p>為了獲得寬闊清晰的街道視野<br>請將手機橫著拿玩喔！</p>
-</div>
 
 <div id="game-container">
   <div id="start-modal">
@@ -447,7 +402,6 @@
       <polygon points="228,93 372,70 372,78 228,101" fill="#ea580c" />
       <polygon points="372,55 432,41 432,56 372,70" fill="#15803d" />
       <polygon points="250,212 350,195 350,120 250,137" fill="url(#glassGrad)" stroke="#38bdf8" stroke-width="2.5"/>
-      <line x1="300" y1="204" x2="300" y2="128" stroke="#0284c7" stroke-width="2" />
 
       <!-- 紅磚樓 -->
       <polygon points="455,178 585,156 585,38 455,60" fill="#b91c1c" stroke="#991b1b" stroke-width="2"/>
@@ -455,14 +409,11 @@
       <polygon points="450,60 580,38 635,25 505,47" fill="#475569" />
       <polygon points="475,175 510,169 510,135 475,141" fill="#451a03" />
       <polygon points="525,166 565,159 565,135 525,142" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
-      <polygon points="475,128 510,122 510,95 475,101" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
-      <polygon points="525,119 565,112 565,85 525,92" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
 
       <!-- 洋房 -->
       <polygon points="665,142 795,120 795,20 665,42" fill="#e9d5ff" stroke="#c084fc" stroke-width="2"/>
       <polygon points="795,120 855,105 855,5 795,20" fill="#c084fc" stroke="#9333ea" stroke-width="2"/>
       <polygon points="660,42 730,0 800,20" fill="#f43f5e" />
-      <polygon points="800,20 730,0 790,-10 860,5" fill="#e11d48" />
 
       <!-- 樹木與街燈 -->
       <ellipse cx="218" cy="235" rx="16" ry="7" fill="rgba(0,0,0,0.3)" />
@@ -502,7 +453,9 @@
         <rect x="35" y="23" width="42" height="5" fill="#ef4444"/>
       </svg>
     </div>
+  </div>
 
+  <div id="bottom-controls">
     <div id="vehicles-container"></div>
     <div id="guess-panel"></div>
   </div>
@@ -528,25 +481,13 @@
 </div>
 
 <script>
-  /* 螢幕方向監聽：直拿提示橫轉 */
-  function checkOrientation() {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const overlay = document.getElementById('orient-overlay');
-    if (overlay) {
-      overlay.style.display = isPortrait ? 'flex' : 'none';
-    }
-  }
-  window.addEventListener('resize', checkOrientation);
-  window.addEventListener('orientationchange', checkOrientation);
-  checkOrientation();
-
   const VEHICLE_DATA = {
-    garbage: { name: '垃圾車', sound: '垃圾車聲.mp3', emoji: '🚛', volume: 0.35 },
-    ambulance: { name: '救護車', sound: '救護車.mp3', emoji: '🚑', volume: 0.35 },
-    firetruck: { name: '消防車', sound: '消防車.mp3', emoji: '🚒', volume: 0.35 },
-    police: { name: '警車', sound: '警車.mp3', emoji: '🚓', volume: 0.35 },
-    motorcycle: { name: '摩托車', sound: '摩托車.mp3', emoji: '🏍️', volume: 0.38 },
-    horn: { name: '汽車喇叭', sound: '按喇叭.mp3', emoji: '🚗', volume: 0.35 }
+    garbage: { name: '垃圾車', sound: '垃圾車聲.mp3', emoji: '🚛', volume: 0.8 },
+    ambulance: { name: '救護車', sound: '救護車.mp3', emoji: '🚑', volume: 0.8 },
+    firetruck: { name: '消防車', sound: '消防車.mp3', emoji: '🚒', volume: 0.8 },
+    police: { name: '警車', sound: '警車.mp3', emoji: '🚓', volume: 0.8 },
+    motorcycle: { name: '摩托車', sound: '摩托車.mp3', emoji: '🏍️', volume: 0.8 },
+    horn: { name: '汽車喇叭', sound: '按喇叭.mp3', emoji: '🚗', volume: 0.8 }
   };
 
   const VOICE_CLIPS = {
@@ -591,7 +532,17 @@
   let correctAttempts = 0;
   let levelFoundTargets = [];
 
+  // 手機全域共用解鎖 Audio 實例，防止手機靜音限制
+  const audioContextUnlocked = new Audio();
+
   document.getElementById('btn-start-trigger').addEventListener('click', function() {
+    // 點擊觸發手機瀏覽器解鎖音訊權限
+    audioContextUnlocked.play().catch(e => {});
+    if ('speechSynthesis' in window) {
+      const emptyUtter = new SpeechSynthesisUtterance('');
+      window.speechSynthesis.speak(emptyUtter);
+    }
+
     const modal = document.getElementById('start-modal');
     if (modal) modal.remove();
     startTime = Date.now();
@@ -615,6 +566,7 @@
     }
   }
 
+  /* 提問語音保證發聲 */
   function playVoiceWithFallback(clipKey, onComplete) {
     if (voiceAudio) { voiceAudio.pause(); voiceAudio.currentTime = 0; }
     const clip = VOICE_CLIPS[clipKey];
@@ -647,6 +599,7 @@
       voiceAudio.volume = 1.0;
       voiceAudio.onended = finish;
       voiceAudio.onerror = runBrowserTTS;
+
       const p = voiceAudio.play();
       if (p !== undefined) {
         p.catch(runBrowserTTS);
@@ -655,8 +608,8 @@
       runBrowserTTS();
     }
 
-    // 手機防死結保險：最慢 3.5 秒自動完成進入下一步
-    setTimeout(finish, 3500);
+    // 防卡死時間保證：4.5秒後無論如何開放下一步
+    setTimeout(finish, 4500);
   }
 
   /* 車輛聲音完整播放 5.2 秒 */
@@ -667,24 +620,29 @@
     setControlsLocked(true);
 
     const cur = LEVELS[currentLevelIdx];
-    document.getElementById('instruction').innerText = "🔊 正在播放車輛聲音，請仔細聽...";
+    document.getElementById('instruction').innerText = "🔊 正在播放車輛聲音...";
 
     try {
       if (cur.level === 3) {
+        // 第三關：順暢依序預備並播放兩種聲音
         currentAudio = new Audio(encodeURI(VEHICLE_DATA[cur.targets[0]].sound));
-        audio2 = new Audio(encodeURI(VEHICLE_DATA[cur.targets[1]].sound));
         currentAudio.volume = VEHICLE_DATA[cur.targets[0]].volume;
-        audio2.volume = VEHICLE_DATA[cur.targets[1]].volume;
-        currentAudio.play().catch(e => {});
-        audio2.play().catch(e => {});
+        currentAudio.play().catch(e => console.log(e));
+
+        setTimeout(() => {
+          audio2 = new Audio(encodeURI(VEHICLE_DATA[cur.targets[1]].sound));
+          audio2.volume = VEHICLE_DATA[cur.targets[1]].volume;
+          audio2.play().catch(e => console.log(e));
+        }, 300);
       } else {
         currentAudio = new Audio(encodeURI(VEHICLE_DATA[cur.target].sound));
         currentAudio.volume = VEHICLE_DATA[cur.target].volume;
-        currentAudio.play().catch(e => {});
+        currentAudio.play().catch(e => console.log(e));
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(e);
+    }
 
-    // 5.2 秒後停止車聲並發問
     promptTimer = setTimeout(() => {
       stopAllAudio();
       document.getElementById('instruction').innerText = "請聽問題...";
@@ -703,6 +661,7 @@
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   }
 
+  /* 關鍵修正：徹底刪除所有動態開過來的小車，絕不殘留在第三關 */
   function cleanMovingVehicles() {
     const movingVehs = document.querySelectorAll('.dynamic-moving-veh');
     movingVehs.forEach(el => el.remove());
@@ -716,7 +675,9 @@
     document.getElementById('level-title').innerText = cur.title;
     document.getElementById('guess-panel').style.display = 'none';
     
+    // 強制清除任何第二關開出的消防車/車輛殘影
     cleanMovingVehicles();
+
     const container = document.getElementById('vehicles-container');
     container.innerHTML = '';
 
@@ -808,25 +769,30 @@
       playVoiceWithFallback('correct', () => {
         document.getElementById('guess-panel').style.display = 'none';
         
+        // 建立動畫車輛
         const v = document.createElement('div');
         v.className = 'vehicle-item dynamic-moving-veh';
         v.style.position = 'absolute';
-        v.style.right = '-200px';
-        v.style.bottom = '35%';
+        v.style.right = '-160px';
+        v.style.bottom = '22%';
         v.style.zIndex = '35';
-        v.style.transform = 'scale(0.4)';
+        v.style.transform = 'scale(0.5)';
         v.style.opacity = '0.7';
         v.innerHTML = `<div class="vehicle-emoji">${VEHICLE_DATA[key].emoji}</div><span class="vehicle-name-tag">${VEHICLE_DATA[key].name}</span>`;
         v.style.transition = 'all 1.6s cubic-bezier(0.25, 1, 0.5, 1)';
         document.getElementById('stage-area').appendChild(v);
         
         setTimeout(() => { 
-          v.style.right = '40%'; 
-          v.style.bottom = '12%';
-          v.style.transform = 'scale(1.15)';
+          v.style.right = '32%'; 
+          v.style.bottom = '10%';
+          v.style.transform = 'scale(1.1)';
           v.style.opacity = '1';
         }, 50);
-        setTimeout(nextLevel, 2200);
+
+        setTimeout(() => {
+          cleanMovingVehicles(); // 開完後抵達目的地立即清除
+          nextLevel();
+        }, 2200);
       });
     } else {
       triggerGentleError(btnElem);
