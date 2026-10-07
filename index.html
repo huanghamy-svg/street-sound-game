@@ -2,106 +2,411 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>街道聽音尋車記</title>
   <style>
-    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: #0b1329; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
-    #game-container {
-      position: relative; width: 100vw; height: 100vh; max-height: 56.25vw; max-width: 177.78vh;
-      margin: auto; top: 50%; transform: translateY(-50%); background: #87ceeb; border: 4px solid #fff;
-      border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 45px rgba(0,0,0,0.7);
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
     }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0b1329;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    /* 手機直向提示遮罩 */
+    #orient-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #0f172a;
+      z-index: 99999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      text-align: center;
+      padding: 24px;
+    }
+    .rotate-phone-icon {
+      font-size: 64px;
+      animation: rotateAnim 2s infinite ease-in-out;
+      margin-bottom: 20px;
+    }
+    @keyframes rotateAnim {
+      0%, 10% { transform: rotate(0deg); }
+      50%, 60% { transform: rotate(-90deg); }
+      90%, 100% { transform: rotate(0deg); }
+    }
+    #orient-overlay h2 {
+      font-size: 26px;
+      margin-bottom: 12px;
+      color: #f59e0b;
+    }
+    #orient-overlay p {
+      font-size: 18px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    /* 遊戲主容器：滿版橫向自動適應 */
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #87ceeb;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 頂部引導列 */
     #header-bar {
-      height: 14%; background: rgba(255, 255, 255, 0.98); border-bottom: 4px solid #f59e0b;
-      display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 100;
+      height: 15%;
+      min-height: 48px;
+      background: rgba(255, 255, 255, 0.98);
+      border-bottom: 3px solid #f59e0b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
     }
     .level-badge {
-      font-size: 24px; font-weight: 900; color: #7c2d12; background: #fed7aa;
-      padding: 6px 18px; border-radius: 30px; border: 3px solid #ea580c; white-space: nowrap;
+      font-size: 18px;
+      font-weight: 900;
+      color: #7c2d12;
+      background: #fed7aa;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 2px solid #ea580c;
+      white-space: nowrap;
     }
-    .instruction-text { font-size: 26px; font-weight: 900; color: #b91c1c; text-align: center; flex: 1; margin: 0 12px; }
+    .instruction-text {
+      font-size: 19px;
+      font-weight: 900;
+      color: #b91c1c;
+      text-align: center;
+      flex: 1;
+      margin: 0 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .btn-replay-sound {
-      background: #10b981; color: #ffffff; font-size: 22px; font-weight: bold;
-      border: 3px solid #047857; border-radius: 40px; padding: 8px 24px; cursor: pointer;
-      box-shadow: 0 4px 0 #047857; white-space: nowrap;
+      background: #10b981;
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: bold;
+      border: 2px solid #047857;
+      border-radius: 30px;
+      padding: 6px 14px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #047857;
+      white-space: nowrap;
     }
-    .btn-replay-sound:active { transform: translateY(3px); box-shadow: none; }
-    #stage-area { flex: 1; position: relative; overflow: hidden; background: linear-gradient(to bottom, #60a5fa 0%, #93c5fd 40%, #dbeafe 55%); }
-    .iso-street-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+    .btn-replay-sound:active {
+      transform: translateY(2px);
+      box-shadow: none;
+    }
+
+    /* 舞台街道區塊 */
+    #stage-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #60a5fa 0%, #93c5fd 40%, #dbeafe 55%);
+    }
+
+    .iso-street-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* 阿公角色 */
     #grandpa-box {
-      position: absolute; bottom: 15%; left: 4%; width: 120px; height: 200px; z-index: 20;
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-end; pointer-events: none;
+      position: absolute;
+      bottom: 8%;
+      left: 2%;
+      width: 90px;
+      height: 150px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      pointer-events: none;
     }
-    .grandpa-shadow { position: absolute; bottom: -6px; width: 85px; height: 22px; background: rgba(0, 0, 0, 0.4); border-radius: 50%; filter: blur(4px); z-index: -1; }
-    .listen-badge { display: flex; align-items: center; gap: 4px; animation: pulse 0.9s infinite alternate; margin-bottom: -15px; z-index: 30; }
-    .listen-ear { font-size: 42px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5)); }
-    .listen-q { font-size: 44px; font-weight: 900; color: #ef4444; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5)); animation: bounce 0.8s infinite alternate; }
-    @keyframes pulse { 0% { transform: scale(0.9); } 100% { transform: scale(1.15); } }
-    @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
-    .grandpa-svg { width: 100%; height: 90%; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); animation: idleBreathe 2.2s ease-in-out infinite alternate; }
-    @keyframes idleBreathe { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
+    .grandpa-shadow {
+      position: absolute;
+      bottom: -4px;
+      width: 65px;
+      height: 16px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 50%;
+      filter: blur(3px);
+      z-index: -1;
+    }
+    .listen-badge {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      animation: pulse 0.9s infinite alternate;
+      margin-bottom: -10px;
+      z-index: 30;
+    }
+    .listen-ear {
+      font-size: 32px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+    .listen-q {
+      font-size: 34px;
+      font-weight: 900;
+      color: #ef4444;
+      animation: bounce 0.8s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.9); }
+      100% { transform: scale(1.15); }
+    }
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-6px); }
+    }
+    .grandpa-svg {
+      width: 100%;
+      height: 90%;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+    }
+
+    /* 車輛選項容器：橫向避開阿公、水平平均分布 */
     #vehicles-container {
-      position: absolute; bottom: 8%; left: 20%; right: 3%; height: 165px;
-      display: flex; align-items: center; justify-content: space-evenly; gap: 16px; z-index: 25;
+      position: absolute;
+      bottom: 6%;
+      left: 17%;
+      right: 3%;
+      height: 48%;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      gap: 12px;
+      z-index: 25;
     }
     .vehicle-item {
-      flex: 1; max-width: 180px; height: 148px; cursor: pointer; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; border-radius: 22px; background: linear-gradient(145deg, #ffffff, #f1f5f9);
-      border: 4px solid #ffffff; box-shadow: 0 16px 28px rgba(0,0,0,0.4), 0 5px 0 #94a3b8; transition: all 0.25s ease;
+      flex: 1;
+      max-width: 170px;
+      height: 88%;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #ffffff, #f1f5f9);
+      border: 3px solid #ffffff;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.35), 0 4px 0 #94a3b8;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
     }
-    .vehicle-emoji { font-size: 68px; line-height: 1; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.25)); }
-    .vehicle-name-tag { background: #0f172a; color: #fff; font-size: 21px; font-weight: 900; padding: 4px 16px; border-radius: 12px; margin-top: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
-    .locked-controls { pointer-events: none !important; opacity: 0.45 !important; filter: grayscale(40%); }
-    .vehicle-item:not(.locked-controls):hover { transform: translateY(-8px) scale(1.05); box-shadow: 0 22px 35px rgba(0,0,0,0.5), 0 8px 0 #64748b; }
-    .vehicle-item:not(.locked-controls):active { transform: translateY(2px) scale(0.98); }
+    .vehicle-emoji {
+      font-size: clamp(38px, 9vw, 56px);
+      line-height: 1.1;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    }
+    .vehicle-name-tag {
+      background: #0f172a;
+      color: #fff;
+      font-size: clamp(15px, 3.2vw, 20px);
+      font-weight: 900;
+      padding: 3px 12px;
+      border-radius: 10px;
+      margin-top: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      white-space: nowrap;
+    }
+
+    .locked-controls {
+      pointer-events: none !important;
+      opacity: 0.45 !important;
+      filter: grayscale(40%);
+    }
+
+    .vehicle-item:not(.locked-controls):active {
+      transform: translateY(3px) scale(0.96);
+    }
+
+    /* 第二關選項面板 */
     #guess-panel {
-      position: absolute; bottom: 8%; left: 20%; right: 4%; height: 60%; background: rgba(255, 255, 255, 0.98);
-      border-radius: 26px; border: 5px solid #0284c7; box-shadow: 0 18px 40px rgba(0,0,0,0.45);
-      display: none; align-items: center; justify-content: space-around; padding: 16px; z-index: 40;
+      position: absolute;
+      bottom: 6%;
+      left: 17%;
+      right: 3%;
+      height: 60%;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 20px;
+      border: 4px solid #0284c7;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: space-around;
+      padding: 10px;
+      z-index: 40;
     }
     .guess-btn {
-      flex: 1; height: 90%; margin: 0 12px; background: #f0fdf4; border: 4px solid #22c55e;
-      border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      cursor: pointer; box-shadow: 0 8px 0 #15803d, 0 12px 20px rgba(0,0,0,0.25); transition: all 0.25s ease;
+      flex: 1;
+      height: 90%;
+      margin: 0 8px;
+      background: #f0fdf4;
+      border: 3px solid #22c55e;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #15803d, 0 8px 16px rgba(0,0,0,0.2);
+      transition: all 0.2s ease;
+      touch-action: manipulation;
     }
-    .guess-btn:not(.locked-controls):active { transform: translateY(5px); box-shadow: 0 3px 0 #15803d; }
-    .guess-btn .vehicle-emoji { font-size: 74px; }
-    .guess-btn span { font-size: 27px; font-weight: 900; color: #14532d; margin-top: 8px; }
-    .shake-error { animation: shake 0.4s ease-in-out; border-color: #ea580c !important; background: #ffedd5 !important; }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-14px); } 75% { transform: translateX(14px); } }
-    .correct-glow { box-shadow: 0 0 45px #10b981 !important; border-color: #10b981 !important; transform: scale(1.1) !important; }
+    .guess-btn:not(.locked-controls):active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #15803d;
+    }
+    .guess-btn .vehicle-emoji {
+      font-size: clamp(38px, 9vw, 56px);
+    }
+    .guess-btn span {
+      font-size: clamp(16px, 3.4vw, 22px);
+      font-weight: 900;
+      color: #14532d;
+      margin-top: 6px;
+      white-space: nowrap;
+    }
+
+    .shake-error {
+      animation: shake 0.4s ease-in-out;
+      border-color: #ea580c !important;
+      background: #ffedd5 !important;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    .correct-glow {
+      box-shadow: 0 0 35px #10b981 !important;
+      border-color: #10b981 !important;
+      transform: scale(1.08) !important;
+    }
+
+    /* 開始遮罩 */
     #start-modal {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.94);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.94);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
     }
     .btn-start-game {
-      background: #f59e0b; color: #7c2d12; font-size: 38px; font-weight: 900; border: 5px solid #fff;
-      border-radius: 50px; padding: 18px 60px; cursor: pointer; box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      background: #f59e0b;
+      color: #7c2d12;
+      font-size: clamp(26px, 6vw, 36px);
+      font-weight: 900;
+      border: 4px solid #fff;
+      border-radius: 40px;
+      padding: 14px 40px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      touch-action: manipulation;
     }
-    .btn-start-game:active { transform: scale(0.96); }
+
+    /* 結算頁面 */
     #result-modal {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95);
-      display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 250; color: #fff;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      color: #fff;
+      padding: 20px;
     }
     .result-card {
-      background: #fff; color: #1e293b; padding: 34px 54px; border-radius: 28px;
-      text-align: center; box-shadow: 0 20px 45px rgba(0,0,0,0.6); border: 6px solid #fbbf24;
+      background: #fff;
+      color: #1e293b;
+      padding: 20px 32px;
+      border-radius: 22px;
+      text-align: center;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+      border: 5px solid #fbbf24;
+      max-width: 90%;
     }
-    .result-card h2 { font-size: 42px; color: #e11d48; margin-bottom: 20px; }
-    .stat-row { font-size: 30px; font-weight: bold; margin: 14px 0; display: flex; justify-content: space-between; gap: 40px; }
-    .stat-val { color: #0369a1; }
+    .result-card h2 {
+      font-size: 26px;
+      color: #e11d48;
+      margin-bottom: 12px;
+    }
+    .stat-row {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 8px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .stat-val {
+      color: #0369a1;
+    }
     .btn-restart {
-      margin-top: 24px; background: #e11d48; color: #fff; font-size: 28px; font-weight: bold;
-      border: none; border-radius: 35px; padding: 12px 50px; cursor: pointer;
+      margin-top: 14px;
+      background: #e11d48;
+      color: #fff;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 28px;
+      padding: 10px 36px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
+<!-- 手機直向旋轉提醒 -->
+<div id="orient-overlay">
+  <div class="rotate-phone-icon">📱</div>
+  <h2>請將手機轉為橫向</h2>
+  <p>為了獲得寬闊清晰的街道視野<br>請將手機橫著拿玩喔！</p>
+</div>
+
 <div id="game-container">
   <div id="start-modal">
-    <button class="btn-start-game" onclick="userStartPlay()">🚦 點我開始遊戲！</button>
+    <button class="btn-start-game" id="btn-start-trigger">🚦 點我開始遊戲！</button>
   </div>
 
   <div id="header-bar">
@@ -134,8 +439,6 @@
       <polygon points="80,183 140,175 145,190 85,198" fill="#ef4444" />
       <polygon points="95,181 110,179 115,194 100,196" fill="#ffffff" />
       <polygon points="125,177 140,175 145,190 130,192" fill="#ffffff" />
-      <polygon points="40,155 75,150 75,120 40,125" fill="url(#glassGrad)" stroke="#cbd5e1" stroke-width="2"/>
-      <polygon points="90,148 125,143 125,113 90,118" fill="url(#glassGrad)" stroke="#cbd5e1" stroke-width="2"/>
 
       <!-- 超商 -->
       <polygon points="230,215 370,192 370,55 230,78" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
@@ -145,7 +448,6 @@
       <polygon points="372,55 432,41 432,56 372,70" fill="#15803d" />
       <polygon points="250,212 350,195 350,120 250,137" fill="url(#glassGrad)" stroke="#38bdf8" stroke-width="2.5"/>
       <line x1="300" y1="204" x2="300" y2="128" stroke="#0284c7" stroke-width="2" />
-      <polygon points="385,170 415,162 415,135 385,143" fill="#94a3b8" />
 
       <!-- 紅磚樓 -->
       <polygon points="455,178 585,156 585,38 455,60" fill="#b91c1c" stroke="#991b1b" stroke-width="2"/>
@@ -155,30 +457,23 @@
       <polygon points="525,166 565,159 565,135 525,142" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
       <polygon points="475,128 510,122 510,95 475,101" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
       <polygon points="525,119 565,112 565,85 525,92" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
-      <polygon points="600,130 625,124 625,100 600,106" fill="url(#glassGrad)" stroke="#fff" stroke-width="1.5"/>
 
       <!-- 洋房 -->
       <polygon points="665,142 795,120 795,20 665,42" fill="#e9d5ff" stroke="#c084fc" stroke-width="2"/>
       <polygon points="795,120 855,105 855,5 795,20" fill="#c084fc" stroke="#9333ea" stroke-width="2"/>
       <polygon points="660,42 730,0 800,20" fill="#f43f5e" />
       <polygon points="800,20 730,0 790,-10 860,5" fill="#e11d48" />
-      <ellipse cx="730" cy="40" rx="14" ry="10" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
-      <polygon points="685,138 725,131 725,85 685,92" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
-      <polygon points="740,129 780,122 780,76 740,83" fill="url(#glassGrad)" stroke="#fff" stroke-width="2"/>
 
       <!-- 樹木與街燈 -->
       <ellipse cx="218" cy="235" rx="16" ry="7" fill="rgba(0,0,0,0.3)" />
       <rect x="215" y="195" width="6" height="40" fill="#78350f" />
       <ellipse cx="218" cy="180" rx="24" ry="30" fill="#16a34a" />
-      <ellipse cx="214" cy="175" rx="18" ry="24" fill="#22c55e" />
 
       <ellipse cx="650" cy="165" rx="14" ry="6" fill="rgba(0,0,0,0.3)" />
       <rect x="647" y="130" width="5" height="35" fill="#78350f" />
       <ellipse cx="650" cy="120" rx="20" ry="25" fill="#15803d" />
-      <ellipse cx="646" cy="116" rx="15" ry="20" fill="#4ade80" />
 
       <line x1="440" y1="188" x2="440" y2="120" stroke="#475569" stroke-width="4" />
-      <path d="M 434 120 Q 440 112 446 120 Z" fill="#facc15" />
       <circle cx="440" cy="122" r="5" fill="#fef08a" />
     </svg>
 
@@ -233,6 +528,18 @@
 </div>
 
 <script>
+  /* 螢幕方向監聽：直拿提示橫轉 */
+  function checkOrientation() {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const overlay = document.getElementById('orient-overlay');
+    if (overlay) {
+      overlay.style.display = isPortrait ? 'flex' : 'none';
+    }
+  }
+  window.addEventListener('resize', checkOrientation);
+  window.addEventListener('orientationchange', checkOrientation);
+  checkOrientation();
+
   const VEHICLE_DATA = {
     garbage: { name: '垃圾車', sound: '垃圾車聲.mp3', emoji: '🚛', volume: 0.35 },
     ambulance: { name: '救護車', sound: '救護車.mp3', emoji: '🚑', volume: 0.35 },
@@ -284,16 +591,19 @@
   let correctAttempts = 0;
   let levelFoundTargets = [];
 
-  function userStartPlay() {
-    document.getElementById('start-modal').style.display = 'none';
+  document.getElementById('btn-start-trigger').addEventListener('click', function() {
+    const modal = document.getElementById('start-modal');
+    if (modal) modal.remove();
     startTime = Date.now();
     loadLevel(0);
-  }
+  });
 
   function setControlsLocked(isLocked) {
     const vContainer = document.getElementById('vehicles-container');
     const gPanel = document.getElementById('guess-panel');
     const replayBtn = document.getElementById('btn-sound');
+    if (!vContainer) return;
+
     if (isLocked) {
       vContainer.classList.add('locked-controls');
       gPanel.classList.add('locked-controls');
@@ -308,39 +618,48 @@
   function playVoiceWithFallback(clipKey, onComplete) {
     if (voiceAudio) { voiceAudio.pause(); voiceAudio.currentTime = 0; }
     const clip = VOICE_CLIPS[clipKey];
-    let hasFallbackRun = false;
+    let hasCompleted = false;
+
+    const finish = () => {
+      if (!hasCompleted) {
+        hasCompleted = true;
+        if (onComplete) onComplete();
+      }
+    };
 
     function runBrowserTTS() {
-      if (hasFallbackRun) return;
-      hasFallbackRun = true;
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(clip.text);
         msg.lang = 'zh-TW';
         msg.volume = 1.0;
-        msg.rate = 0.8;
-        msg.pitch = 1.1;
-        msg.onend = () => { if (onComplete) onComplete(); };
+        msg.rate = 0.85;
+        msg.onend = finish;
+        msg.onerror = finish;
         window.speechSynthesis.speak(msg);
       } else {
-        if (onComplete) onComplete();
+        finish();
       }
     }
 
     try {
       voiceAudio = new Audio(encodeURI(clip.file));
       voiceAudio.volume = 1.0;
-      voiceAudio.onended = () => { if (onComplete) onComplete(); };
+      voiceAudio.onended = finish;
+      voiceAudio.onerror = runBrowserTTS;
       const p = voiceAudio.play();
       if (p !== undefined) {
-        p.catch(err => runBrowserTTS());
+        p.catch(runBrowserTTS);
       }
     } catch (e) {
       runBrowserTTS();
     }
+
+    // 手機防死結保險：最慢 3.5 秒自動完成進入下一步
+    setTimeout(finish, 3500);
   }
 
-  /* 車輛聲音完整播放 5.2 秒（原 3.2s + 延長 2s） */
+  /* 車輛聲音完整播放 5.2 秒 */
   function playTurnSequence() {
     stopAllAudio();
     if (promptTimer) clearTimeout(promptTimer);
@@ -350,19 +669,22 @@
     const cur = LEVELS[currentLevelIdx];
     document.getElementById('instruction').innerText = "🔊 正在播放車輛聲音，請仔細聽...";
 
-    if (cur.level === 3) {
-      currentAudio = new Audio(encodeURI(VEHICLE_DATA[cur.targets[0]].sound));
-      audio2 = new Audio(encodeURI(VEHICLE_DATA[cur.targets[1]].sound));
-      currentAudio.volume = VEHICLE_DATA[cur.targets[0]].volume;
-      audio2.volume = VEHICLE_DATA[cur.targets[1]].volume;
-      currentAudio.play().catch(e => console.log(e));
-      audio2.play().catch(e => console.log(e));
-    } else {
-      currentAudio = new Audio(encodeURI(VEHICLE_DATA[cur.target].sound));
-      currentAudio.volume = VEHICLE_DATA[cur.target].volume;
-      currentAudio.play().catch(e => console.log(e));
-    }
+    try {
+      if (cur.level === 3) {
+        currentAudio = new Audio(encodeURI(VEHICLE_DATA[cur.targets[0]].sound));
+        audio2 = new Audio(encodeURI(VEHICLE_DATA[cur.targets[1]].sound));
+        currentAudio.volume = VEHICLE_DATA[cur.targets[0]].volume;
+        audio2.volume = VEHICLE_DATA[cur.targets[1]].volume;
+        currentAudio.play().catch(e => {});
+        audio2.play().catch(e => {});
+      } else {
+        currentAudio = new Audio(encodeURI(VEHICLE_DATA[cur.target].sound));
+        currentAudio.volume = VEHICLE_DATA[cur.target].volume;
+        currentAudio.play().catch(e => {});
+      }
+    } catch (e) {}
 
+    // 5.2 秒後停止車聲並發問
     promptTimer = setTimeout(() => {
       stopAllAudio();
       document.getElementById('instruction').innerText = "請聽問題...";
