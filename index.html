@@ -43,17 +43,17 @@
       z-index: 100;
     }
     .level-badge {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 900;
       color: #7c2d12;
       background: #fed7aa;
-      padding: 5px 12px;
+      padding: 5px 14px;
       border-radius: 20px;
       border: 2px solid #ea580c;
       white-space: nowrap;
     }
     .instruction-text {
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 900;
       color: #b91c1c;
       text-align: center;
@@ -70,7 +70,7 @@
       font-weight: bold;
       border: 2px solid #047857;
       border-radius: 30px;
-      padding: 6px 14px;
+      padding: 6px 16px;
       cursor: pointer;
       box-shadow: 0 3px 0 #047857;
       white-space: nowrap;
@@ -80,7 +80,7 @@
       box-shadow: none;
     }
 
-    /* 上半部：精緻街道與阿公 */
+    /* 上半部：街道與阿公 */
     #stage-area {
       height: 48%;
       position: relative;
@@ -213,7 +213,7 @@
       transform: translateY(3px) scale(0.96);
     }
 
-    /* 第二關選項 */
+    /* 第二關卡片排列（滿版三列，保證好按） */
     #guess-panel {
       position: absolute;
       top: 14px;
@@ -482,18 +482,17 @@
 
 <script>
   const VEHICLE_DATA = {
-    garbage: { name: '垃圾車', sound: '垃圾車聲.mp3', emoji: '🚛', volume: 0.8 },
-    ambulance: { name: '救護車', sound: '救護車.mp3', emoji: '🚑', volume: 0.8 },
-    firetruck: { name: '消防車', sound: '消防車.mp3', emoji: '🚒', volume: 0.8 },
-    police: { name: '警車', sound: '警車.mp3', emoji: '🚓', volume: 0.8 },
-    motorcycle: { name: '摩托車', sound: '摩托車.mp3', emoji: '🏍️', volume: 0.8 },
-    horn: { name: '汽車喇叭', sound: '按喇叭.mp3', emoji: '🚗', volume: 0.8 }
+    garbage: { name: '垃圾車', sound: '垃圾車聲.mp3', emoji: '🚛', volume: 0.9 },
+    ambulance: { name: '救護車', sound: '救護車.mp3', emoji: '🚑', volume: 0.9 },
+    firetruck: { name: '消防車', sound: '消防車.mp3', emoji: '🚒', volume: 0.9 },
+    police: { name: '警車', sound: '警車.mp3', emoji: '🚓', volume: 0.9 },
+    motorcycle: { name: '摩托車', sound: '摩托車.mp3', emoji: '🏍️', volume: 0.9 },
+    horn: { name: '汽車喇叭', sound: '按喇叭.mp3', emoji: '🚗', volume: 0.9 }
   };
 
+  /* 全關卡統一使用最標準、語音一致的提問音檔 */
   const VOICE_CLIPS = {
-    level1: { file: '聽聽看是什麼車子的聲音.mp3', text: '請仔細聽，這是哪一台車子的聲音呢？' },
-    level2: { file: '後面車子的聲音.mp3', text: '後面有車子開過來囉，猜猜看是哪一台？' },
-    level3: { file: '兩種車子的聲音.mp3', text: '仔細聽喔，這次有兩種車子的聲音！' },
+    question: { file: '聽聽看是什麼車子的聲音.mp3', text: '請仔細聽，這是哪一台車子的聲音呢？' },
     correct: { file: '答對了.mp3', text: '答對了！好厲害喔！' },
     tryAgain: { file: '再聽一次.mp3', text: '再聽一次看看喔～' }
   };
@@ -502,21 +501,18 @@
     {
       level: 1,
       title: "第一關：看車找聲音",
-      voiceKey: 'level1',
       vehicles: ['garbage', 'motorcycle', 'ambulance'],
       target: 'garbage'
     },
     {
       level: 2,
       title: "第二關：聽後方來車",
-      voiceKey: 'level2',
       options: ['firetruck', 'horn', 'police'],
       target: 'firetruck'
     },
     {
       level: 3,
       title: "第三關：雙重聲音大挑戰",
-      voiceKey: 'level3',
       vehicles: ['motorcycle', 'firetruck', 'ambulance', 'police'],
       targets: ['motorcycle', 'police']
     }
@@ -532,12 +528,17 @@
   let correctAttempts = 0;
   let levelFoundTargets = [];
 
-  // 手機全域共用解鎖 Audio 實例，防止手機靜音限制
-  const audioContextUnlocked = new Audio();
+  // 手機全域共用解鎖音訊物件
+  const sharedAudio1 = new Audio();
+  const sharedAudio2 = new Audio();
+  const sharedVoice = new Audio();
 
   document.getElementById('btn-start-trigger').addEventListener('click', function() {
-    // 點擊觸發手機瀏覽器解鎖音訊權限
-    audioContextUnlocked.play().catch(e => {});
+    // 於使用者第一次點擊時，全面解鎖手機瀏覽器的多音軌權限
+    sharedAudio1.play().catch(e => {});
+    sharedAudio2.play().catch(e => {});
+    sharedVoice.play().catch(e => {});
+
     if ('speechSynthesis' in window) {
       const emptyUtter = new SpeechSynthesisUtterance('');
       window.speechSynthesis.speak(emptyUtter);
@@ -566,9 +567,9 @@
     }
   }
 
-  /* 提問語音保證發聲 */
+  /* 提問語音一致播放 */
   function playVoiceWithFallback(clipKey, onComplete) {
-    if (voiceAudio) { voiceAudio.pause(); voiceAudio.currentTime = 0; }
+    stopAllAudio();
     const clip = VOICE_CLIPS[clipKey];
     let hasCompleted = false;
 
@@ -595,12 +596,12 @@
     }
 
     try {
-      voiceAudio = new Audio(encodeURI(clip.file));
-      voiceAudio.volume = 1.0;
-      voiceAudio.onended = finish;
-      voiceAudio.onerror = runBrowserTTS;
+      sharedVoice.src = encodeURI(clip.file);
+      sharedVoice.volume = 1.0;
+      sharedVoice.onended = finish;
+      sharedVoice.onerror = runBrowserTTS;
 
-      const p = voiceAudio.play();
+      const p = sharedVoice.play();
       if (p !== undefined) {
         p.catch(runBrowserTTS);
       }
@@ -608,11 +609,11 @@
       runBrowserTTS();
     }
 
-    // 防卡死時間保證：4.5秒後無論如何開放下一步
-    setTimeout(finish, 4500);
+    // 保險計時器：避免任何系統音訊中斷導致按鈕卡住
+    setTimeout(finish, 3800);
   }
 
-  /* 車輛聲音完整播放 5.2 秒 */
+  /* 車輛聲音播滿 5.2 秒（第二關必響、第三關雙聲齊發） */
   function playTurnSequence() {
     stopAllAudio();
     if (promptTimer) clearTimeout(promptTimer);
@@ -624,30 +625,32 @@
 
     try {
       if (cur.level === 3) {
-        // 第三關：順暢依序預備並播放兩種聲音
-        currentAudio = new Audio(encodeURI(VEHICLE_DATA[cur.targets[0]].sound));
-        currentAudio.volume = VEHICLE_DATA[cur.targets[0]].volume;
-        currentAudio.play().catch(e => console.log(e));
+        sharedAudio1.src = encodeURI(VEHICLE_DATA[cur.targets[0]].sound);
+        sharedAudio1.volume = VEHICLE_DATA[cur.targets[0]].volume;
+        sharedAudio1.play().catch(e => console.log(e));
 
         setTimeout(() => {
-          audio2 = new Audio(encodeURI(VEHICLE_DATA[cur.targets[1]].sound));
-          audio2.volume = VEHICLE_DATA[cur.targets[1]].volume;
-          audio2.play().catch(e => console.log(e));
-        }, 300);
+          sharedAudio2.src = encodeURI(VEHICLE_DATA[cur.targets[1]].sound);
+          sharedAudio2.volume = VEHICLE_DATA[cur.targets[1]].volume;
+          sharedAudio2.play().catch(e => console.log(e));
+        }, 200);
       } else {
-        currentAudio = new Audio(encodeURI(VEHICLE_DATA[cur.target].sound));
-        currentAudio.volume = VEHICLE_DATA[cur.target].volume;
-        currentAudio.play().catch(e => console.log(e));
+        // 第一關與第二關（消防車）保證播放
+        sharedAudio1.src = encodeURI(VEHICLE_DATA[cur.target].sound);
+        sharedAudio1.volume = VEHICLE_DATA[cur.target].volume;
+        sharedAudio1.play().catch(e => console.log("車聲播放重試:", e));
       }
     } catch (e) {
       console.log(e);
     }
 
+    // 車聲播滿 5.2 秒後停止，接著播放統一提問音效
     promptTimer = setTimeout(() => {
       stopAllAudio();
       document.getElementById('instruction').innerText = "請聽問題...";
       
-      playVoiceWithFallback(cur.voiceKey, () => {
+      // 每一關都統一播放一致的提問人聲
+      playVoiceWithFallback('question', () => {
         document.getElementById('instruction').innerText = "請點選發出聲音的車輛！";
         setControlsLocked(false);
       });
@@ -655,16 +658,12 @@
   }
 
   function stopAllAudio() {
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-    if (audio2) { audio2.pause(); audio2.currentTime = 0; }
-    if (voiceAudio) { voiceAudio.pause(); voiceAudio.currentTime = 0; }
+    try {
+      sharedAudio1.pause(); sharedAudio1.currentTime = 0;
+      sharedAudio2.pause(); sharedAudio2.currentTime = 0;
+      sharedVoice.pause(); sharedVoice.currentTime = 0;
+    } catch (e) {}
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-  }
-
-  /* 關鍵修正：徹底刪除所有動態開過來的小車，絕不殘留在第三關 */
-  function cleanMovingVehicles() {
-    const movingVehs = document.querySelectorAll('.dynamic-moving-veh');
-    movingVehs.forEach(el => el.remove());
   }
 
   function loadLevel(idx) {
@@ -673,13 +672,13 @@
     levelFoundTargets = [];
 
     document.getElementById('level-title').innerText = cur.title;
-    document.getElementById('guess-panel').style.display = 'none';
     
-    // 強制清除任何第二關開出的消防車/車輛殘影
-    cleanMovingVehicles();
-
-    const container = document.getElementById('vehicles-container');
-    container.innerHTML = '';
+    // 徹底清空下半部所有選項與任何殘留物件
+    const vContainer = document.getElementById('vehicles-container');
+    const gPanel = document.getElementById('guess-panel');
+    vContainer.innerHTML = '';
+    gPanel.innerHTML = '';
+    gPanel.style.display = 'none';
 
     if (cur.level === 1 || cur.level === 3) {
       renderStationaryVehicles(cur.vehicles);
@@ -717,7 +716,7 @@
         element.classList.add('correct-glow');
         setControlsLocked(true);
         playVoiceWithFallback('correct', () => {
-          setTimeout(nextLevel, 500);
+          setTimeout(nextLevel, 600);
         });
       } else {
         triggerGentleError(element);
@@ -730,7 +729,7 @@
         if (levelFoundTargets.length === cur.targets.length) {
           setControlsLocked(true);
           playVoiceWithFallback('correct', () => {
-            setTimeout(showFinalResult, 500);
+            setTimeout(showFinalResult, 600);
           });
         } else {
           playVoiceWithFallback('correct');
@@ -758,6 +757,7 @@
     });
   }
 
+  /* 第二關：答對後直接綠光慶祝並進入第三關，徹底刪除開車動畫，絕不在畫面上殘留消防車 */
   function onGuessClicked(key, btnElem) {
     totalAttempts++;
     const cur = LEVELS[1];
@@ -767,32 +767,7 @@
       setControlsLocked(true);
 
       playVoiceWithFallback('correct', () => {
-        document.getElementById('guess-panel').style.display = 'none';
-        
-        // 建立動畫車輛
-        const v = document.createElement('div');
-        v.className = 'vehicle-item dynamic-moving-veh';
-        v.style.position = 'absolute';
-        v.style.right = '-160px';
-        v.style.bottom = '22%';
-        v.style.zIndex = '35';
-        v.style.transform = 'scale(0.5)';
-        v.style.opacity = '0.7';
-        v.innerHTML = `<div class="vehicle-emoji">${VEHICLE_DATA[key].emoji}</div><span class="vehicle-name-tag">${VEHICLE_DATA[key].name}</span>`;
-        v.style.transition = 'all 1.6s cubic-bezier(0.25, 1, 0.5, 1)';
-        document.getElementById('stage-area').appendChild(v);
-        
-        setTimeout(() => { 
-          v.style.right = '32%'; 
-          v.style.bottom = '10%';
-          v.style.transform = 'scale(1.1)';
-          v.style.opacity = '1';
-        }, 50);
-
-        setTimeout(() => {
-          cleanMovingVehicles(); // 開完後抵達目的地立即清除
-          nextLevel();
-        }, 2200);
+        setTimeout(nextLevel, 800);
       });
     } else {
       triggerGentleError(btnElem);
@@ -809,7 +784,6 @@
 
   function nextLevel() {
     stopAllAudio();
-    cleanMovingVehicles();
     if (currentLevelIdx < LEVELS.length - 1) {
       loadLevel(currentLevelIdx + 1);
     } else {
@@ -819,7 +793,6 @@
 
   function showFinalResult() {
     stopAllAudio();
-    cleanMovingVehicles();
     const duration = Math.round((Date.now() - startTime) / 1000);
     const accuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 100;
 
